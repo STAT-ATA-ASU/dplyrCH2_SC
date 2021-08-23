@@ -1,0 +1,289 @@
+---
+title: "Verbs `select` and `mutate`"
+date: 'Last compiled: `r format(Sys.time(), "%b %d, %Y")`'
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r, label = "SETUP", echo = FALSE, results= 'hide', message = FALSE, warning = FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.align = "center", fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE)
+library(dplyr)
+library(hflights)
+library(scales)
+# Convert the hflights data.frame into a hflights tbl
+hflights <- tbl_df(hflights)
+# Create a random subset of size 10,000 to work with
+set.seed(123)
+train <- sample(227496, 10000)
+hflights <- hflights[train, ]
+# Create the object carriers, containing only the UniqueCarrier variable of hflights
+carriers <- hflights$UniqueCarrier
+# Both the dplyr and hflights packages are loaded into workspace
+lut <- c("AA" = "American", "AS" = "Alaska", "B6" = "JetBlue", "CO" = "Continental", 
+         "DL" = "Delta", "OO" = "SkyWest", "UA" = "United", "US" = "US_Airways", 
+         "WN" = "Southwest", "EV" = "Atlantic_Southeast", "F9" = "Frontier", 
+         "FL" = "AirTran", "MQ" = "American_Eagle", "XE" = "ExpressJet", 
+         "YV" = "Mesa")
+
+# Use lut to translate the UniqueCarrier column of hflights
+hflights$UniqueCarrier <- lut[hflights$UniqueCarrier]
+lut <- c("A" = "carrier", "B" = "weather", "C" = "FFA", 
+         "D" = "security", "E" = "not cancelled")
+
+# Use the lookup table to create a vector of code labels. 
+# Assign the vector to the CancellationCode column of hflights
+hflights$CancellationCode <- lut[hflights$CancellationCode]
+```
+
+_________________
+
+## Verbs
+
+The `dplyr` package contains five key data manipulation functions, also called verbs:
+
+* `select()`, which returns a subset of the columns,
+* `filter()`, that is able to return a subset of the rows,
+* `arrange()`, that reorders the rows according to single or multiple variables,
+* `mutate()`, used to add columns from existing data,
+* `summarise()` or `summarize()`, which reduces each group to a single row by calculating aggregate measures.
+
+If you want to find out more about these functions, consult the documentation by typing `?function_name` in the console. What order of operations should we use to to find the average value of the `ArrDelay` (arrival delay) variable for all American Airline flights in the  `hflights` `tbl`?
+
+```{r}
+OA <- filter(hflights, UniqueCarrier == "American" | UniqueCarrier == "American_Eagle")
+head(OA) # Note only American flights ( Consider American and American Eagle to be the "American Airline")
+mean(OA$ArrDelay, na.rm =  TRUE)
+# Using the pipe operator to answer a slightly different question:
+hflights %>% 
+  group_by(UniqueCarrier) %>% 
+  summarize(AD = mean(ArrDelay, na.rm = TRUE))
+```
+
+To answer the simple question whether flight delays tend to shrink or grow during a flight, we can safely discard a lot of the variables of each flight. To select only the ones that matter, we can use `select()`. Its syntax is plain and simple:
+
+```{r, eval = FALSE}
+select(data, Var1, Var2, ...) 
+```
+
+the first argument being the `tbl` you want to select variables from and the `VarX` arguments the variables you want to retain. You can also use the `:` and `-` operators inside of select, similar to indexing a `data.frame` with hard brackets. `select()` lets you apply them to names as well as integer indexes. The `-` operator allows you to select everything except a column or a range of columns.
+
+## Instructions
+
+* Use `select()` to return a copy of `hflights` that contains only the columns `ActualElapsedTime`, `AirTime`, `ArrDelay` and `DepDelay`.
+
+```{r}
+# Your code goes here
+# Return a copy of hflights that contains the four columns related to delay.
+
+
+```
+
+* Print `hflights` and assert that indeed, this dataset has not changed.
+
+```{r}
+# Your code goes here
+# print hflights, nothing has changed!
+
+```
+
+* Return a copy of `hflights` containing the columns `Origin` up to `Cancelled`. Do not use integer indexes.
+
+```{r}
+# Your code goes here
+# Return a copy of hflights containing the columns Origin up to Cancelled 
+names(hflights)
+
+```
+
+* Find the most concise way to select: columns `Year` up to and including `DayOfWeek`, columns `ArrDelay` up to and including `Diverted`. You may want to examine the order of hflight's column names before you begin.
+
+```{r}
+# Your code goes here
+# Answer to last question: be concise! 
+names(hflights)
+
+
+```
+
+## Helper functions for variable selection
+
+`dplyr` comes with a set of helper functions that can help you select variables. These functions find groups of variables to select, based on their names.  `dplyr` provides 6 helper functions, each of which only works when used inside `select()`.
+
+* `starts_with("X")`: every name that starts with "X",
+* `ends_with("X")`: every name that ends with "X",
+* `contains("X")`: every name that contains "X",
+* `matches("X")`: every name that matches "X", which can be a regular expression,
+* `num_range("x", 1:5)`: the variables named `x01`, `x02`, `x03`, `x04` and `x05`,
+* `one_of(x)`: every name that appears in `x`, which should be a character vector.
+
+__Watch out:__ Surround character strings with quotes when you pass them to a helper function, but do not surround variable names with quotes if you are not passing them to a helper function.
+
+## Instructions
+
+* Use `select` and a helper function to return a `tbl` copy of `hflights` that contains just `ArrDelay` and `DepDelay`.
+
+```{r}
+#Your code goes here
+# Return a tbl containing just ArrDelay and DepDelay
+
+
+```
+
+* Use a combination of helper functions and variable names to return the `UniqueCarrier`, `FlightNum`, `TailNum`, `Cancelled`, and `CancellationCode` columns of `hflights`.
+
+```{r}
+# Your code goes here
+# Return a tbl as described in the second exercise, using both helper 
+# functions and variable names
+
+
+```
+
+* Find the most concise way to return the following columns with `select` and its helper functions:  `DepTime`, `ArrTime`, `ActualElapsedTime`, `AirTime`, `ArrDelay`, `DepDelay`. Use only helper functions!
+
+```{r}
+# Your code goes here
+# Return a tbl as described in the third exercise, using only helper functions.
+
+
+```
+
+## Comparison to basic `R`
+
+To see the added value of the `dplyr` package, it is useful to compare its syntax with basic `R`. Up to now, you have only considered functionality that is also available without the use of `dplyr`. However, the elegance and ease-of-use of `dplyr` should be clear from this short set of exercises. To provide continuity, you will keep on working with the `hflights` dataset.
+
+## Instructions
+
+For exercises 1 to 3, duplicate each of the basic `R` commands shown by using dplyr-specific syntax. Don't use integer indexes!
+
+```{r}
+# Exercise 1
+ex1r <- hflights[c("TaxiIn", "TaxiOut", "Distance")]
+head(ex1r)
+# Your code goes below
+
+
+```
+
+```{r}
+# Exercise 2
+ex2r <- hflights[c("Year", "Month", "DayOfWeek", "DepTime", "ArrTime")]
+head(ex2r)
+# Your code goes below
+
+
+```
+
+```{r}
+# Exercise 3
+ex3r <- hflights[c("TailNum", "TaxiIn", "TaxiOut")]
+head(ex3r)
+# Your code goes below
+
+
+```
+
+## Mutating is creating
+
+`mutate()` is the second of five data manipulation functions you will get familiar with in this handout. In contrast to `select()`, which retains a subset of all variables, `mutate()` creates new columns which are added to a copy of the dataset.
+
+Let's briefly recap the syntax:
+
+```{r, eval = FALSE}
+mutate(data, Mutant1 = expr(Var0, Var1,...))
+```
+
+Here, data is the `tbl` you want to use to create new columns. The second argument is an expression that assigns the result of any `R` function using already existing variables `Var0`, `Var1`, ... to a new variable `Mutant1`.
+
+## Instructions
+
+* Add a new variable named `ActualGroundTime` that measures the difference between `ActualElapsedTime` and `AirTime` to a copy of `hflights`. Save your results as `g1`.
+
+```{r}
+# Your code goes here
+# Add the new variable ActualGroundTime to a copy of hflights and save the result as g1.
+
+
+```
+
+* Which variables in `g1` do you think count as a plane's "ground time"? Use `mutate()` to add these variables together and save them as `GroundTime`. Save your results as `g2`. Were you right? If you are, `GroundTime` should equal `ActualGroundTime` whenever an `NA` is not involved. Check this by printouts in the console.
+
+```{r}
+# Add the new variable GroundTime to a copy of g1 and save the result as g2.
+
+
+```
+
+* Add a new variable to `g2` named `AverageSpeed` that denotes the average speed that each plane flew in miles per hour. Save the resulting dataset as `g3`. Use `Distance / AirTime * 60`.
+
+```{r}
+# Your code goes here
+# Add the new variable AverageSpeed to a copy of g2 and save the result as g3.
+
+
+```
+
+## Instructions
+
+* A new variable `loss` is created with the first line of code below. Modify this code to create a second variable, `loss_percent`, the percentage of the `DepDelay` represented by `ArrDelay - DepDelay`. Assign the result to `m1`.
+
+```{r}
+m1 <- mutate(hflights, loss = ArrDelay - DepDelay)
+# Your code goes here
+# Add a second variable loss_percent to the dataset and save the result to m1.
+
+
+```
+
+
+* You will notice that the `m1` is redundantly defined: `loss_percent` uses `ArrDelay - DepDelay`, which is already defined as the `loss` variable. `mutate()` allows you to use a new variable while creating a second variable (or third variable, or etc.) in the same call. Rewrite the command above to use loss to define `loss_percent` and assign the result to `m2`.
+
+```{r}
+# Remove the redundancy from your previous exercise and reuse loss to define 
+# the loss_percent variable.  Assign the result to m2.
+
+
+```
+
+* Using `mutate()`, create three new variables: (1) `TotalTaxi`, which is the sum of all taxiing times; (2) `ActualGroundTime`, which is the difference of `ActualElapsedTime` and `AirTime`; (3) `Diff`, the difference between the two newly created variables. Assign the result to `m3`. Observe that the `Diff` column will be zero at all times if you solved the exercise correctly!
+
+
+```{r}
+# Your code goes here
+# Add the three variables as described in the third exercise and save the result to m3.
+
+
+```
+
+## Recap on `mutate` and `select`
+
+As of now, you mastered two of the five data manipulation functions that are at the core of `dplyr`: `select()` and `mutate()`.
+
+Which statement concerning the following four lines of code is correct?
+
+A. `hflight <- select(hflights, -(Year:Month), -(DepTime:Diverted))`
+
+B. `select(hflights, starts_with("D"))`
+
+C. `select(hflights, -(Year:Month), -(DepTime:Diverted))`
+
+D. `hflight <- select(hflights, starts_with("Day"))`
+
+
+1. A. and C. lead to the same `hflight` variable and output; B. and D. do not.
+2. A. and C. lead to the same `hflight` variable and output, as do B. and D.
+3. A. and D. lead to the same `hflight` variable and output; B. and C. do not.
+4. A. and D. lead to the same hflights variable and output, as do B. and C.
+
+
+```{r}
+# Your verification code goes here
+
+
+```
+
+______________
+
